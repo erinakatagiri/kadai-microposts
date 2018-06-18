@@ -31,6 +31,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Micropost::class);
     }
+    
+    //
+    //
+    //
+    //
+    //follow機能
+    //
+    
      public function followings()
     {
         return $this->belongsToMany(User::class, 'user_follow', 'user_id', 'follow_id')->withTimestamps();
@@ -86,4 +94,50 @@ class User extends Authenticatable
         $follow_user_ids[] = $this->id;
         return Micropost::whereIn('user_id', $follow_user_ids);
     }
+    
+    //fav機能
+    //
+    //
+    //
+    //
+    
+     public function favoriter()
+    {
+        return $this->belongsToMany(Micropost::class, 'favorites', 'u_id', 'fav_id')->withTimestamps();
+    }
+    
+    public function favorite($favId)
+{
+    // confirm if already following
+        $exist = $this->is_favorite($favId);
+        
+        if ($exist) {
+        // do nothing if already followinfavg
+            return false;
+        } else {
+        // follow if not following
+            $this->favoriter()->attach($favId);
+            return true;
+    }
+}
+
+public function unfavorite($favId)
+{
+    // confirming if already following
+        $exist = $this->is_favorite($favId);
+
+        if ($exist) {
+        // stop following if following
+            $this->favoriter()->detach($favId);
+            return true;
+        } else {
+        // do nothing if not following
+            return false;
+    }
+}
+
+
+public function is_favorite($favId) {
+    return $this->favoriter()->where('fav_id', $favId)->exists();
+}
 }
